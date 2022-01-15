@@ -1,0 +1,5 @@
+strings.c:4:10:StringLen	24	static
+strings.c:15:10:FindSymbol	24	static
+strings.c:30:10:StringCopy	24	static
+strings.c:42:10:StringAdd	24	static
+strings.c:60:6:Uint16ToString	24	static

@@ -1,0 +1,9 @@
+main.c:66:6:HAL_CAN_RxFifo0MsgPendingCallback	96	static
+main.c:117:9:HexToHalfByte	16	static
+main.c:129:19:IsHex	16	static
+main.c:138:19:HexToByte	24	static
+main.c:152:10:FindSymbol	24	static
+main.c:165:6:CDC_Receive	32	static
+main.c:378:5:main	48	static
+main.c:454:6:SystemClock_Config	88	static
+main.c:501:6:Error_Handler	4	static,ignoring_inline_asm
