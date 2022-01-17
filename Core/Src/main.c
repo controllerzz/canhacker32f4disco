@@ -88,7 +88,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		}
 		else{
 			sendLen = sprintf((char*)bufferTextCan, "t%3.3X%1.1X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%4.4X\r", \
-				(unsigned int)RxHeader.ExtId, \
+				(unsigned int)RxHeader.StdId, \
 				(unsigned int)RxHeader.DLC, \
 
 				RxData[0], \
