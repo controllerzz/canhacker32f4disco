@@ -72,35 +72,22 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	    HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_SET);
 
 		if (RxHeader.IDE == CAN_ID_EXT){
-	        sendLen = sprintf((char*)bufferTextCan, "T%8.8X%1.1X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%4.4X\r", \
+	        sendLen = sprintf((char*)bufferTextCan, "T%8.8X%1.1X", \
 				(unsigned int)RxHeader.ExtId, \
-				(unsigned int)RxHeader.DLC, \
-
-				RxData[0], \
-				RxData[1], \
-				RxData[2], \
-				RxData[3], \
-				RxData[4], \
-				RxData[5], \
-				RxData[6], \
-				RxData[7], \
-				(unsigned int)htim5.Instance->CNT);
+				(unsigned int)RxHeader.DLC);
 		}
 		else{
-			sendLen = sprintf((char*)bufferTextCan, "t%3.3X%1.1X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%4.4X\r", \
+	        sendLen = sprintf((char*)bufferTextCan, "t%3.3X%1.1X", \
 				(unsigned int)RxHeader.StdId, \
-				(unsigned int)RxHeader.DLC, \
-
-				RxData[0], \
-				RxData[1], \
-				RxData[2], \
-				RxData[3], \
-				RxData[4], \
-				RxData[5], \
-				RxData[6], \
-				RxData[7], \
-				(unsigned int)htim5.Instance->CNT);
+				(unsigned int)RxHeader.DLC);
 		}
+
+		for (uint8_t cnt = 0; cnt < RxHeader.DLC; cnt ++)
+		{
+			sendLen += sprintf((char*)bufferTextCan + sendLen, "%2.2X", RxData[cnt]);
+		}
+
+		sendLen += sprintf((char*)bufferTextCan + sendLen, "%4.4X\r", (unsigned int)htim5.Instance->CNT);
 
 	    tim5cnt = htim5.Instance->CNT;
 	    CDC_Transmit_FS(bufferTextCan, sendLen);
