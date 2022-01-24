@@ -113,6 +113,7 @@ uint8_t HexToHalfByte(uint8_t hex)
   return 0;
 }
 
+
 ConvertReturnType IsHex(uint8_t hex)
 {
   if((hex >= '0' && hex <= '9') || (hex >= 'A' && hex <= 'F') || (hex >= 'a' && hex <= 'b'))
@@ -136,6 +137,7 @@ ConvertReturnType HexToByte(uint8_t * hex, uint8_t * data){
   return CONVERT_OK;
 }
 
+
 uint16_t FindSymbol(uint8_t * string, uint8_t symbol){
   uint16_t index = 0;
 
@@ -148,6 +150,7 @@ uint16_t FindSymbol(uint8_t * string, uint8_t symbol){
 
   return index;
 }
+
 
 void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	uint8_t sendLen = 0, byte;
@@ -174,7 +177,7 @@ void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	    break;
 
 	  case 'V':
-	    sendLen = sprintf((char*)bufferCmd,"V0101\r");
+	    sendLen = sprintf((char*)bufferCmd,"V0093\r");
 	    break;
 
 	  case 'v':
@@ -266,6 +269,7 @@ void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	      HexToByte(&Buf[7], &byte);
 	      id |= byte;
 	      TxHeader.ExtId = id;
+	      TxHeader.RTR = CAN_RTR_DATA;
 
 	      HexToByte(&Buf[8], &byte);
 	      TxHeader.DLC = byte & 0x0F;
@@ -293,6 +297,7 @@ void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	      HexToByte(&Buf[3], &byte);
 	      id |= byte >> 4;
 	      TxHeader.StdId = id;
+	      TxHeader.RTR = CAN_RTR_DATA;
 
 	      TxHeader.DLC = byte & 0x0F;
 
@@ -307,6 +312,12 @@ void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	    }
 	    break;
 
+	  case 'M':
+		  break;
+
+	  case 'm':
+		  break;
+
 	  case 's':
 	    break;
 
@@ -314,11 +325,52 @@ void CDC_Receive(uint8_t* Buf, uint32_t *Len){
 	    sendLen = sprintf((char*)bufferCmd,"N9876\r");
 	    break;
 
-	  case 'r':
-	    break;
-
 	  case 'R':
-	    break;
+			HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_SET);
+
+		    if(FindSymbol(Buf, '\r') <= 26)
+		    {
+		      TxHeader.IDE = CAN_ID_EXT;
+
+		      HexToByte(&Buf[1], &byte);
+		      id = byte << 24;
+		      HexToByte(&Buf[3], &byte);
+		      id |= byte << 16;
+		      HexToByte(&Buf[5], &byte);
+		      id |= byte << 8;
+		      HexToByte(&Buf[7], &byte);
+		      id |= byte;
+		      TxHeader.ExtId = id;
+		      TxHeader.RTR = CAN_RTR_REMOTE;
+
+		      HexToByte(&Buf[8], &byte);
+		      TxHeader.DLC = byte & 0x0F;
+
+		      if(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) > 0)
+		        HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &mailBoxNum);
+		    }
+		    break;
+
+	  case 'r':
+			HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_SET);
+
+		    if(FindSymbol(Buf, '\r') <= 26)
+		    {
+		      TxHeader.IDE = CAN_ID_STD;
+
+		      HexToByte(&Buf[1], &byte);
+		      id = byte << 4;
+		      HexToByte(&Buf[3], &byte);
+		      id |= byte >> 4;
+		      TxHeader.StdId = id;
+		      TxHeader.RTR = CAN_RTR_REMOTE;
+
+		      TxHeader.DLC = byte & 0x0F;
+
+		      if(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) > 0)
+		        HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &mailBoxNum);
+		    }
+		    break;
 
 	  case 'C':
 	    if(Buf[1] == '\r')
